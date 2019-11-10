@@ -116,6 +116,10 @@ int TBitField::operator==(const TBitField &bf) const // сравнение
 			if (pMem[i] != bf.pMem[i])
 				return 0;
 		}
+		for (int i = (MemLen - 1) * 32; i < BitLen; i++)
+		{
+			if (GetBit(i) != bf.GetBit(i)) return 0;
+		}
 		return 1;
   }
 }
@@ -130,13 +134,64 @@ int TBitField::operator!=(const TBitField &bf) const // сравнение
 			if (pMem[i] != bf.pMem[i])
 				return 1;
 		}
+		for (int i = (MemLen - 1) * 32; i < BitLen; i++)
+		{
+			if (GetBit(i) != bf.GetBit(i)) return 1;
+		}
 		return 0;
 	}
 }
 
 TBitField TBitField::operator|(const TBitField &bf) // операция "или"
 {
-	TBitField max,min;
+	int maxBitLen = bf.BitLen;
+	if (BitLen > bf.BitLen)
+	{
+		maxBitLen = BitLen;
+	}
+	TBitField res(maxBitLen);
+	if (BitLen < bf.BitLen)
+	{
+		for (int i = 0; i < MemLen - 1; i++)
+		{
+			res.pMem[i] = pMem[i];
+		}
+		for (int i = (MemLen - 1) * 32; i < BitLen; i++)
+		{
+			if (GetBit(i))
+			{
+				res.SetBit(i);
+
+			}
+		}
+		for (int i = 0; i < res.MemLen; i++)
+		{
+			res.pMem[i] = res.pMem[i] | bf.pMem[i];
+		}
+	}
+	else
+	{
+		for (int i = 0; i < bf.MemLen - 1; i++)
+		{
+			res.pMem[i] = bf.pMem[i];
+		}
+		for (int i = (bf.MemLen - 1) * 32; i < bf.BitLen; i++)
+		{
+			if (bf.GetBit(i))
+			{
+				res.SetBit(i);
+
+			}
+		}
+		for (int i = 0; i < res.MemLen; i++)
+		{
+			res.pMem[i] = res.pMem[i] | pMem[i];
+		}
+	}
+	return res;
+
+
+	/*TBitField max,min;
 	if (BitLen >= bf.BitLen)
 	{
 		max= *this;
@@ -173,20 +228,66 @@ TBitField TBitField::operator|(const TBitField &bf) // операция "или"
 			{
 				rez.pMem[i] |= max.pMem[i];
 			}
-			if (min.BitLen == max.BitLen)
+			
 				for (int i = (max.MemLen - 1) * 32; i < max.BitLen; i++)
 				{
 					if (max.GetBit(i) | rez.GetBit(i) == 1) rez.SetBit(i);
 					else rez.ClrBit(i);
 				}
 		}
-			return rez;
+			return rez;*/
 		
 }
 
 TBitField TBitField::operator& (const TBitField &bf) // операция "и"
 {
-	TBitField max, min;
+	int maxBitLen = bf.BitLen;
+	if (BitLen > bf.BitLen)
+	{
+		maxBitLen = BitLen;
+	}
+	TBitField res(maxBitLen);
+	if (BitLen < bf.BitLen)
+	{
+		for (int i = 0; i < MemLen - 1; i++)
+		{
+			res.pMem[i] = pMem[i];
+		}
+		for (int i = (MemLen - 1) * 32; i < BitLen; i++)
+		{
+			if (GetBit(i))
+			{
+				res.SetBit(i);
+
+			}
+		}
+		for (int i = 0; i < res.MemLen; i++)
+		{
+			res.pMem[i] = res.pMem[i] & bf.pMem[i];
+		}
+	}
+	else
+	{
+		for (int i = 0; i < bf.MemLen - 1; i++)
+		{
+			res.pMem[i] = bf.pMem[i];
+		}
+		for (int i = (bf.MemLen - 1) * 32; i < bf.BitLen; i++)
+		{
+			if (bf.GetBit(i))
+			{
+				res.SetBit(i);
+
+			}
+		}
+		for (int i = 0; i < res.MemLen; i++)
+		{
+			res.pMem[i] = res.pMem[i] & pMem[i];
+		}
+	}
+	return res;
+
+	/*TBitField max, min;
 	if (BitLen >= bf.BitLen)
 	{
 		max = *this;
@@ -231,7 +332,7 @@ TBitField TBitField::operator& (const TBitField &bf) // операция "и"
 				else rez.ClrBit(i);
 			}
 	}
-		return rez;
+		return rez;*/
 }
 
 TBitField TBitField::operator~(void) // отрицание
